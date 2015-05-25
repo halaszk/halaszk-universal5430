@@ -23,8 +23,8 @@
 #define REDUCE_CURRENT_STEP	100
 #define MINIMUM_INPUT_CURRENT	300
 
-#define SIOP_INPUT_LIMIT_CURRENT 1200
-#define SIOP_CHARGING_LIMIT_CURRENT 1000
+int SIOP_INPUT_LIMIT_CURRENT = 1200;
+int SIOP_CHARGING_LIMIT_CURRENT = 1000;
 #define SIOP_WIRELESS_INPUT_LIMIT_CURRENT 620
 #define SIOP_WIRELESS_CHARGING_LIMIT_CURRENT 680
 #define SLOW_CHARGING_CURRENT_STANDARD 400
@@ -1437,6 +1437,8 @@ static irqreturn_t max77804_bypass_irq(int irq, void *data)
 	return IRQ_HANDLED;
 }
 
+bool unstable_power_detection = true;
+
 static void max77804_chgin_isr_work(struct work_struct *work)
 {
 	struct max77804_charger_data *charger = container_of(work,
@@ -1476,7 +1478,7 @@ static void max77804_chgin_isr_work(struct work_struct *work)
 			stable_count++;
 		else
 			stable_count = 0;
-		if (stable_count > 10) {
+		if (stable_count > 10 || !unstable_power_detection) {
 			pr_info("%s: irq(%d), chgin(0x%x), chg_dtls(0x%x) prev 0x%x\n",
 					__func__, charger->irq_chgin,
 					chgin_dtls, chg_dtls, prev_chgin_dtls);
